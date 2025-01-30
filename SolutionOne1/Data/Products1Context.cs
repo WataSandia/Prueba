@@ -23,7 +23,7 @@ namespace SolutionOne1.Data
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
+                optionsBuilder.UseSqlServer("name=ConnectionStrings:DefaultConnection");
             }
         }
 
@@ -34,10 +34,14 @@ namespace SolutionOne1.Data
                 entity.ToTable("Products1");
 
                 entity.Property(e => e.Id)
-                    .ValueGeneratedNever()
+                    .HasMaxLength(24)
+                    .IsUnicode(false)
                     .HasColumnName("ID");
 
-                entity.Property(e => e.CompanyId).HasColumnName("CompanyID");
+                entity.Property(e => e.CompanyId)
+                    .HasMaxLength(24)
+                    .IsUnicode(false)
+                    .HasColumnName("CompanyID");
 
                 entity.Property(e => e.CreatedAt).HasColumnType("smalldatetime");
 

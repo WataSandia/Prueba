@@ -25,45 +25,64 @@ namespace SolutionOne1.Controllers
         [HttpPost("Load")]
         public async Task<IActionResult> LoadAsync(IFormFile dataset)
         {
-            using var stream = dataset.OpenReadStream();
-            using var streamReader = new StreamReader(stream);
+            using var fileStream = dataset.OpenReadStream();
+            var streamReader = new StreamReader(fileStream);
 
+            var csvReader = GetCsvReader(streamReader);
+            var recordsCollection = csvReader.GetRecordsAsync<Products1>();
+
+            var dataTable = GetDataTable();
+
+            await foreach (var record in recordsCollection)
+            {
+                var r = record;
+            }
+
+            throw new NotImplementedException();
+        }
+
+        private CsvReader GetCsvReader(StreamReader streamReader)
+        {
             var csvReaderConfiguration = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
+                HasHeaderRecord = true,
                 IgnoreBlankLines = true,
-                ShouldSkipRecord = args => args.Row.Parser.Record?.All(field => string.IsNullOrWhiteSpace(field)) ?? false
+                ShouldSkipRecord = args =>
+                {
+                    if (string.IsNullOrWhiteSpace(args.Row.GetField(0)) is true)
+                        return true;
+
+                    else if (string.IsNullOrWhiteSpace(args.Row.GetField(2)) is true)
+                        return true;
+
+                    else if (string.IsNullOrWhiteSpace(args.Row.GetField(3)) is true)
+                        return true;
+
+                    else if (string.IsNullOrWhiteSpace(args.Row.GetField(4)) is true)
+                        return true;
+
+                    else if (string.IsNullOrWhiteSpace(args.Row.GetField(5)) is true)
+                        return true;
+
+                    return false;
+                }
             };
 
-            using var csvReader = new CsvReader(streamReader, csvReaderConfiguration);
-            csvReader.Context
-                .TypeConverterOptionsCache
-                .GetOptions<string>()
-                .NullValues
-                .Add("");
+            var csvReader = new CsvReader(streamReader, csvReaderConfiguration);
+            return csvReader;
+        }
 
-            using var csvDataReader = new CsvDataReader(csvReader);       
-
-            using var dataTable = new DataTable();
-            dataTable.Load(csvDataReader);
-
+        private DataTable GetDataTable()
+        {
             var connectionString = _dbContext.Database.GetConnectionString();
-            using var sqlBulkCopy = new SqlBulkCopy(connectionString)
-            {
-                DestinationTableName = "Products1",
-                BatchSize = 1000,
-                EnableStreaming = true
-            };
+            var dummyQuery = "SELECT * FROM Products1 WHERE 1 = 0;";
 
-            sqlBulkCopy.ColumnMappings.Add("id", "ID");
-            sqlBulkCopy.ColumnMappings.Add("name", "Name");
-            sqlBulkCopy.ColumnMappings.Add("company_id", "CompanyID");
-            sqlBulkCopy.ColumnMappings.Add("amount", "Amount");
-            sqlBulkCopy.ColumnMappings.Add("status", "Status");
-            sqlBulkCopy.ColumnMappings.Add("created_at", "CreatedAt");
-            sqlBulkCopy.ColumnMappings.Add("paid_at", "PaidAt");
+            var sqlDataAdapter = new SqlDataAdapter(dummyQuery, connectionString);
 
-            await sqlBulkCopy.WriteToServerAsync(dataTable);
-            return Ok();
+            var dataTable = new DataTable();
+            sqlDataAdapter.FillSchema(dataTable, SchemaType.Source);
+
+            return dataTable;
         }
     }
 }

@@ -1,11 +1,8 @@
 ﻿using CsvHelper.Configuration.Attributes;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace SolutionOne1.Models
 {
-    public partial class Products1
+    public class Products1Metadata
     {
         [Name("id")]
         public string Id { get; set; } = null!;
