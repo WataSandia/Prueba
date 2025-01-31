@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35707.178 d17.12
+VisualStudioVersion = 17.12.35707.178
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionTwo", "SolutionTwo\SolutionTwo.csproj", "{D5652DFC-A016-415C-8F13-D68916792620}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Products1DB", "Products1DB\Products1DB.sqlproj", "{61912E4F-28B7-4F10-A433-DC5A18E87004}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SolutionOne1", "SolutionOne1\SolutionOne1.csproj", "{4A70EBF1-5265-4AD9-9264-A7EEE13CA99F}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Producsts2DB", "Producsts2\Producsts2DB.sqlproj", "{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,12 @@ Global
 		{4A70EBF1-5265-4AD9-9264-A7EEE13CA99F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A70EBF1-5265-4AD9-9264-A7EEE13CA99F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A70EBF1-5265-4AD9-9264-A7EEE13CA99F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24A2BEC3-7E2F-4DFD-B9D7-19077A14E0B8}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

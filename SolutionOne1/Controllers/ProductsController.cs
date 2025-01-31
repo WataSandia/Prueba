@@ -26,19 +26,53 @@ namespace SolutionOne1.Controllers
         public async Task<IActionResult> LoadAsync(IFormFile dataset)
         {
             using var fileStream = dataset.OpenReadStream();
-            var streamReader = new StreamReader(fileStream);
+            using var streamReader = new StreamReader(fileStream);
 
-            var csvReader = GetCsvReader(streamReader);
-            var recordsCollection = csvReader.GetRecordsAsync<Products1>();
+            using CsvReader csvReader = GetCsvReader(streamReader);
+            DataTable dataTable = GetDataTable();
 
-            var dataTable = GetDataTable();
+            var counter = 0;
+            var bulkInsertTasks = new List<Task>();
+            var badFormattedRows = new List<Products1>();
 
-            await foreach (var record in recordsCollection)
+            while (await csvReader.ReadAsync() is true)
             {
-                var r = record;
+                Products1 product = null;
+
+                try
+                {
+                    product = csvReader.GetRecord<Products1>();
+
+                    DataRow newRow = dataTable.NewRow();
+                    newRow["ID"] = product.Id;
+                    newRow["Name"] = product.Name is not null ? product.Name : DBNull.Value;
+                    newRow["CompanyID"] = product.CompanyId;
+                    newRow["Amount"] = product.Amount;
+                    newRow["Status"] = product.Status;
+                    newRow["CreatedAt"] = product.CreatedAt;
+                    newRow["PaidAt"] = product.PaidAt is not null ? product.PaidAt : DBNull.Value;
+
+                    dataTable.Rows.Add(newRow);
+                    counter++;
+
+                    if (counter % 1000 is 0)
+                    {
+                        Task bulkInsertTask = BulkInsert(dataTable);
+                        bulkInsertTasks.Add(bulkInsertTask);
+
+                        dataTable = dataTable.Clone();
+                        counter = 0;
+                    }
+                }
+                catch
+                {
+                    badFormattedRows.Add(product);
+                    counter++;
+                }
             }
 
-            throw new NotImplementedException();
+            await Task.WhenAll(bulkInsertTasks);
+            return Ok($"{badFormattedRows.Count} Rows could't be copied in data base for bad formattign issues.");
         }
 
         private CsvReader GetCsvReader(StreamReader streamReader)
@@ -49,7 +83,10 @@ namespace SolutionOne1.Controllers
                 IgnoreBlankLines = true,
                 ShouldSkipRecord = args =>
                 {
-                    if (string.IsNullOrWhiteSpace(args.Row.GetField(0)) is true)
+                    if (args.Row.Parser.Record?.All(column => string.IsNullOrWhiteSpace(column)) is true)
+                        return true;
+
+                    else if (string.IsNullOrWhiteSpace(args.Row.GetField(0)) is true)
                         return true;
 
                     else if (string.IsNullOrWhiteSpace(args.Row.GetField(2)) is true)
@@ -83,6 +120,26 @@ namespace SolutionOne1.Controllers
             sqlDataAdapter.FillSchema(dataTable, SchemaType.Source);
 
             return dataTable;
+        }
+
+        private async Task BulkInsert(DataTable dataTable)
+        {
+            var connectionString = _dbContext.Database.GetConnectionString();
+            using var sqlBulkCopy = new SqlBulkCopy(connectionString)
+            {
+                BatchSize = 1000,
+                DestinationTableName = "Products1"
+            };
+
+            sqlBulkCopy.ColumnMappings.Add("ID", "ID");
+            sqlBulkCopy.ColumnMappings.Add("Name", "Name");
+            sqlBulkCopy.ColumnMappings.Add("CompanyID", "CompanyID");
+            sqlBulkCopy.ColumnMappings.Add("Amount", "Amount");
+            sqlBulkCopy.ColumnMappings.Add("Status", "Status");
+            sqlBulkCopy.ColumnMappings.Add("CreatedAt", "CreatedAt");
+            sqlBulkCopy.ColumnMappings.Add("PaidAt", "PaidAt");
+
+            await sqlBulkCopy.WriteToServerAsync(dataTable);
         }
     }
 }

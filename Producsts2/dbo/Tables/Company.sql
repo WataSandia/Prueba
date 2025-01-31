@@ -1,0 +1,6 @@
+﻿CREATE TABLE [dbo].[Company] (
+    [ID]   UNIQUEIDENTIFIER NOT NULL,
+    [Name] VARCHAR (50)     NULL,
+    CONSTRAINT [PK_Company] PRIMARY KEY CLUSTERED ([ID] ASC)
+);
+
